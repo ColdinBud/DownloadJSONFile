@@ -1,0 +1,24 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="DownloadJSONFile.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Interval" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">10</Value>
+    </Setting>
+    <Setting Name="FilePath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\HL7\JsonData\</Value>
+    </Setting>
+    <Setting Name="AdmissionUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">http://10.65.1.184:777/pyxis/medes/adt/admission</Value>
+    </Setting>
+    <Setting Name="OrderAddUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">http://10.65.1.184:777/pyxis/medes/order/add</Value>
+    </Setting>
+    <Setting Name="SourceAdmissionUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">http://10.68.82.25:3000/pyxis/medes/adt/admission</Value>
+    </Setting>
+    <Setting Name="SourceOrderAddUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">http://10.68.82.25:3000/pyxis/medes/order/add</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
