@@ -65,31 +65,33 @@ namespace DownloadJSONFile
                 patientFileText = File.ReadAllText(tempPatient, Encoding.UTF8);
                 patientList = DeserializeJsonToList<Patient>(patientFileText);
 
-                foreach (Patient p in patientList)
+                if (patientList != null && patientList.Count > 0)
                 {
-                    string patientFile = patientPath + "\\" +  p.CHARTNO + "_" + p.ACCOUNTIDSE + ".txt";
-
-                    if (!File.Exists(patientFile))
+                    foreach (Patient p in patientList)
                     {
-                        try
-                        {
-                            // send json test to middle, if success, save to file
-                            string json = JsonConvert.SerializeObject(p);
+                        string patientFile = patientPath + "\\" +  p.CHARTNO + "_" + p.ACCOUNTIDSE + ".txt";
 
-                            if (SendAnSMSMessage(json, Properties.Settings.Default.AdmissionUrl))
+                        if (!File.Exists(patientFile))
+                        {
+                            try
                             {
-                                System.IO.File.WriteAllText(patientFile, json);
+                                // send json test to middle, if success, save to file
+                                string json = JsonConvert.SerializeObject(p);
+
+                                if (SendAnSMSMessage(json, Properties.Settings.Default.AdmissionUrl))
+                                {
+                                    System.IO.File.WriteAllText(patientFile, json);
+                                }
+
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine(ex.Message);
                             }
 
                         }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine(ex.Message);
-                        }
 
                     }
-
-
                 }
             }
 
@@ -102,39 +104,42 @@ namespace DownloadJSONFile
                 orderFileText = File.ReadAllText(tempOrder, Encoding.UTF8);
                 orderList = DeserializeJsonToList<OrderSource>(orderFileText);
 
-                foreach (OrderSource orderSource in orderList)
+                if (orderList != null && orderList.Count > 0)
                 {
-                    string orderFile = orderPath + "\\" + orderSource.CHARTNO 
-                        + "_" + orderSource.ACCOUNTIDSE + "_" + orderSource.PHRORDERIDSE + ".txt";
-
-                    if (!File.Exists(orderFile))
+                    foreach (OrderSource orderSource in orderList)
                     {
-                        try
+                        string orderFile = orderPath + "\\" + orderSource.CHARTNO 
+                            + "_" + orderSource.ACCOUNTIDSE + "_" + orderSource.PHRORDERIDSE + ".txt";
+
+                        if (!File.Exists(orderFile))
                         {
-                            Order order = new Order();
-                            order.Patient = new Patient();
-
-                            order.Patient.CHARTNO = orderSource.CHARTNO;
-                            order.Patient.ACCOUNTIDSE = orderSource.ACCOUNTIDSE;
-
-                            order.DrugOrders = new List<OrderSource>();
-                            order.DrugOrders.Add(orderSource);
-
-                            string json = JsonConvert.SerializeObject(order);
-
-                            if (SendAnSMSMessage(json, Properties.Settings.Default.OrderAddUrl))
+                            try
                             {
-                                System.IO.File.WriteAllText(orderFile, json);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine(ex.Message);
-                        }
+                                Order order = new Order();
+                                order.Patient = new Patient();
 
+                                order.Patient.CHARTNO = orderSource.CHARTNO;
+                                order.Patient.ACCOUNTIDSE = orderSource.ACCOUNTIDSE;
+
+                                order.DrugOrders = new List<OrderSource>();
+                                order.DrugOrders.Add(orderSource);
+
+                                string json = JsonConvert.SerializeObject(order);
+
+                                if (SendAnSMSMessage(json, Properties.Settings.Default.OrderAddUrl))
+                                {
+                                    System.IO.File.WriteAllText(orderFile, json);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine(ex.Message);
+                            }
+
+
+                        }
 
                     }
-
                 }
             }
 
@@ -145,8 +150,6 @@ namespace DownloadJSONFile
             //get patient list from WFH and write to tempPatient.txt file
             WebClient client = new WebClient();
 
-            string url = sourceUrl;
-
             //---------TEST USING MY FILE
             /*
             if (sourceUrl.Equals(Properties.Settings.Default.SourceAdmissionUrl))
@@ -155,25 +158,36 @@ namespace DownloadJSONFile
                 url = "file:///C:/HL7/TempOrder.html";
             */
             //---------------------------
+            string url = sourceUrl;
+            string content = "";
 
-            byte[] bResult = client.DownloadData(url);
-            string content = Encoding.UTF8.GetString(bResult); 
-            Debug.WriteLine("Content: " + content);
-
-            string jsonFileName = "";
-            switch (sourceUrl.Substring(sourceUrl.LastIndexOf("/") + 1))
+            try
             {
-                case "admission":
-                    jsonFileName = "tempPatient.txt";
-                    break;
-                case "add":
-                    jsonFileName = "tempOrder.txt";
-                    break;
-                default:
-                    jsonFileName = "tempPatient.txt";
-                    break;
+                byte[] bResult = client.DownloadData(url);
+                content = Encoding.UTF8.GetString(bResult);
+                Debug.WriteLine("Content: " + content);
             }
-            System.IO.File.WriteAllText(Properties.Settings.Default.FilePath + jsonFileName, content);
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+            finally
+            {
+                string jsonFileName = "";
+                switch (sourceUrl.Substring(sourceUrl.LastIndexOf("/") + 1))
+                {
+                    case "admission":
+                        jsonFileName = "tempPatient.txt";
+                        break;
+                    case "add":
+                        jsonFileName = "tempOrder.txt";
+                        break;
+                    default:
+                        jsonFileName = "tempPatient.txt";
+                        break;
+                }
+                System.IO.File.WriteAllText(Properties.Settings.Default.FilePath + jsonFileName, content);
+            }
         }
 
         public static bool SendAnSMSMessage(string json, string apiUrl)
